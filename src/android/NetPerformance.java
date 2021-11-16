@@ -57,7 +57,7 @@ public class NetPerformance extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         if (ACTION_REQUEST_PERMISSION.equals(action)) {
             
-            this.requestPermission(message, callbackContext);
+            this.requestPermission(callbackContext);
             return true;
         }else if(ACTION_ENABLE_GPS_DIALOG.equals(action)){
 
@@ -90,7 +90,7 @@ public class NetPerformance extends CordovaPlugin {
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.READ_PHONE_NUMBERS,
                             Manifest.permission.READ_SMS
-                    }
+                    };
           cordova.requestPermissions(
                     this,
                     PERMISSION_REQUEST_CODE,
@@ -106,12 +106,11 @@ public class NetPerformance extends CordovaPlugin {
             {
                 if(r == PackageManager.PERMISSION_DENIED)
                 {
-                    newCallbackContext.error(false);
-                    this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, false));
+                    newCallbackContext.error(0);
                     return;
                 }
             }
-            newCallbackContext.success(true);
+            newCallbackContext.success(1);
             newCallbackContext = null;
         }
         
