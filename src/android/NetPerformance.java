@@ -71,13 +71,12 @@ public class NetPerformance extends CordovaPlugin {
 
     private void requestPermission(CallbackContext callbackContext) {
         newCallbackContext = callbackContext;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String[] permissions = {
                             Manifest.permission.READ_PHONE_STATE,
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.READ_PHONE_NUMBERS,
-                            Manifest.permission.READ_SMS,
-                            Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                            Manifest.permission.READ_SMS                            
                     };
             cordova.requestPermissions(
                     this,
@@ -85,17 +84,7 @@ public class NetPerformance extends CordovaPlugin {
                     permissions
             );
         } else {
-            String[] permissions = {
-                            Manifest.permission.READ_PHONE_STATE,
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.READ_PHONE_NUMBERS,
-                            Manifest.permission.READ_SMS
-                    };
-          cordova.requestPermissions(
-                    this,
-                    PERMISSION_REQUEST_CODE,
-                    permissions
-            );  
+            newCallbackContext.success(1);
         }
     }
 
@@ -114,6 +103,18 @@ public class NetPerformance extends CordovaPlugin {
             newCallbackContext = null;
         }
         
+    }
+
+    private void addProperty(JSONObject obj, String key, Object value) {
+        try {
+            if (value == null) {
+                obj.put(key, JSONObject.NULL);
+            } else {
+                obj.put(key, value);
+            }
+        } catch (JSONException ignored) {
+            //Believe exception only occurs when adding duplicate keys, so just ignore it
+        }
     }
 
 }
