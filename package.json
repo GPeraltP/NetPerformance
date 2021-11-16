@@ -1,0 +1,22 @@
+{
+  "name": "cordova-plugin-netperformance",
+  "version": "0.0.1",
+  "description": "Plugin Net Performance",
+  "cordova": {
+    "id": "cordova-plugin-netperformance",
+    "platforms": []
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GPeraltP/NetPerformance.git"
+  },
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "Gerson Peralta",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GPeraltP/NetPerformance/issues"
+  },
+  "homepage": "https://github.com/GPeraltP/NetPerformance#readme"
+}
