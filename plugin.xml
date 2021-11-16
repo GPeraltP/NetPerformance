@@ -7,7 +7,7 @@
 	<platform name="android">
 		<config-file parent="/*" target="res/xml/config.xml">
 			<feature name="NetPerformance">
-				<param name="android-package" value="cordova-plugin-netperformance.NetPerformance" />
+				<param name="android-package" value="cordova.plugin.netperformance.NetPerformance" />
 			</feature>
 		</config-file>
 		<config-file parent="/*" target="AndroidManifest.xml">

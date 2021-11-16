@@ -1,9 +1,9 @@
 {
-  "name": "cordova-plugin-netperformance",
+  "name": "cordova.plugin.netperformance",
   "version": "0.0.1",
   "description": "Plugin Net Performance",
   "cordova": {
-    "id": "cordova-plugin-netperformance",
+    "id": "cordova.plugin.netperformance",
     "platforms": []
   },
   "repository": {

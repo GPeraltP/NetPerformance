@@ -1,4 +1,4 @@
-package cordova-plugin-netperformance;
+package cordova.plugin.netperformance;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
