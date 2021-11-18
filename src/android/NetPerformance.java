@@ -54,7 +54,7 @@ public class NetPerformance extends CordovaPlugin {
     private static final String ACTION_ENABLE_GPS_DIALOG = "enableGPSDialog";
 
     private static final int PERMISSION_REQUEST_CODE = 100;
-
+    private LocationRequest locationRequest;
     private CallbackContext newCallbackContext = null;
     private Activity activity;
 
@@ -68,7 +68,9 @@ public class NetPerformance extends CordovaPlugin {
             this.requestPermission(callbackContext);
             return true;
         }else if(ACTION_ENABLE_GPS_DIALOG.equals(action)){
-
+            newCallbackContext = callbackContext;
+            cordova.setActivityResultCallback (this); //necessary to call onActivityResult
+            this.enableGPS();
             return true;
         }else if(ACTION_START_PERFORM.equals(action)){
             activity.runOnUiThread(new Runnable() {
@@ -129,6 +131,65 @@ public class NetPerformance extends CordovaPlugin {
         
     }
 
+    private void enableGPS() {
+        locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(5000);
+        locationRequest.setFastestInterval(2000);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
+        builder.setAlwaysShow(true);
+
+        Task<LocationSettingsResponse> result = LocationServices.getSettingsClient(cordova.getActivity().getApplicationContext()).checkLocationSettings(builder.build());
+
+        result.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+            @Override
+            public void onComplete( Task<LocationSettingsResponse> task) {
+                try {
+                    //When GPS is Active send code 1
+                    LocationSettingsResponse response = task.getResult(ApiException.class);
+                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK,"1");
+                    newCallbackContext.sendPluginResult(pluginResult);
+                }catch (ApiException e){
+                    switch (e.getStatusCode()){
+                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                            try {
+                                ResolvableApiException resolvableApiException = (ResolvableApiException)e;
+                                resolvableApiException.startResolutionForResult(cordova.getActivity(),REQUEST_CHECK_SETTING);
+                            } catch (IntentSender.SendIntentException ex) {
+                                ex.printStackTrace();
+                            }
+                        break;
+
+                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                            break;
+                    }
+                }
+
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        //Check Answer Google GPS Dialog
+        PluginResult pluginResult;
+        if (requestCode == REQUEST_CHECK_SETTING){
+            switch (resultCode){
+
+                case Activity.RESULT_OK:
+                    pluginResult = new PluginResult(PluginResult.Status.OK,"1");
+                    newCallbackContext.sendPluginResult(pluginResult);
+                break;
+
+                case Activity.RESULT_CANCELED:
+                    pluginResult = new PluginResult(PluginResult.Status.ERROR,"0");
+                    newCallbackContext.sendPluginResult(pluginResult);
+                break;
+            }
+        }
+    }
    /* private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(this.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
