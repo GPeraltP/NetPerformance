@@ -13,6 +13,6 @@ exports.requestRequiredPermission = function (success, error) {
 };
 
 exports.enableGPSDialog = function (success, error) {
-    exec(success, error, 'LocationPlugin', 'enableGPSDialog',[]);
+    exec(success, error, 'NetPerformance', 'enableGPSDialog',[]);
 };
 
