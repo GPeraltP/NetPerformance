@@ -1,5 +1,6 @@
 package cordova.plugin.netperformance;
 
+import cordova.plugin.netperformance.ServiceNet;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
@@ -55,9 +56,13 @@ public class NetPerformance extends CordovaPlugin {
     private static final int PERMISSION_REQUEST_CODE = 100;
 
     private CallbackContext newCallbackContext = null;
+    private Activity activity;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+
+        activity = cordova.getActivity();
+
         if (ACTION_REQUEST_PERMISSION.equals(action)) {
             
             this.requestPermission(callbackContext);
@@ -66,10 +71,22 @@ public class NetPerformance extends CordovaPlugin {
 
             return true;
         }else if(ACTION_START_PERFORM.equals(action)){
-            startService(new Intent(this, MyService.class));
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    activity.getApplicationContext().startService(new Intent(activity, ServiceNet.class));
+                    callbackContext.success();
+                }
+            });
             return true;
         }else if(ACTION_STOP_PERFORM.equals(action)){
-            stopService(new Intent(this, MyService.class));
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    activity.getApplicationContext().stopService(new Intent(activity, ServiceNet.class));
+                    callbackContext.success();
+                }
+            });
             return true;
         }
         return false;
@@ -112,7 +129,7 @@ public class NetPerformance extends CordovaPlugin {
         
     }
 
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
+   /* private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(this.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(service.service.getClassName())) {
@@ -120,7 +137,7 @@ public class NetPerformance extends CordovaPlugin {
             }
         }
         return false;
-    }
+    } */
 
     private void addProperty(JSONObject obj, String key, Object value) {
         try {
