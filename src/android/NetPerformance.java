@@ -33,12 +33,14 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import android.os.Build;
+import android.os.Bundle;
 
 import android.widget.Toast;
 
 import android.Manifest;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 
 /**
  * This class echoes a string called from JavaScript.
@@ -46,6 +48,7 @@ import android.app.Activity;
 public class NetPerformance extends CordovaPlugin {
 
     private static final String ACTION_START_PERFORM = "startNetPerformData";
+    private static final String ACTION_STOP_PERFORM = "stopNetPerformData";
     private static final String ACTION_REQUEST_PERMISSION = "requestRequiredPermission";
     private static final String ACTION_ENABLE_GPS_DIALOG = "enableGPSDialog";
 
@@ -63,7 +66,10 @@ public class NetPerformance extends CordovaPlugin {
 
             return true;
         }else if(ACTION_START_PERFORM.equals(action)){
-
+            startService(new Intent(this, MyService.class));
+            return true;
+        }else if(ACTION_STOP_PERFORM.equals(action)){
+            stopService(new Intent(this, MyService.class));
             return true;
         }
         return false;
@@ -76,7 +82,8 @@ public class NetPerformance extends CordovaPlugin {
                             Manifest.permission.READ_PHONE_STATE,
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.READ_PHONE_NUMBERS,
-                            Manifest.permission.READ_SMS                            
+                            Manifest.permission.READ_SMS,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE                            
                     };
             cordova.requestPermissions(
                     this,
@@ -103,6 +110,16 @@ public class NetPerformance extends CordovaPlugin {
             newCallbackContext = null;
         }
         
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(this.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void addProperty(JSONObject obj, String key, Object value) {

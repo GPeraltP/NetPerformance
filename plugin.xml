@@ -16,8 +16,16 @@
             <uses-permission android:name="android.permission.READ_SMS"/>
             <uses-permission android:name="android.permission.READ_PHONE_NUMBERS"/>
 			<uses-permission android:name="Manifest.permission.ACCESS_BACKGROUND_LOCATION"/>
+			<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+			<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+			<uses-permission android:name="android.permission.INTERNET" />
+			<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+		</config-file>
+		<config-file parent="application*" target="AndroidManifest.xml">
+            <service android:name=".ServiceNet" />
 		</config-file>
 		<source-file src="src/android/NetPerformance.java" target-dir="src/cordova-plugin-netperformance/NetPerformance" />
+		<source-file src="src/android/ServiceNet.java" target-dir="src/cordova-plugin-netperformance/ServiceNet" />
         <framework src="src/android/resource/build-extras.gradle" custom="true" type="gradleReference" />
 	</platform>
 </plugin>
