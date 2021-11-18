@@ -54,6 +54,7 @@ public class NetPerformance extends CordovaPlugin {
     private static final String ACTION_ENABLE_GPS_DIALOG = "enableGPSDialog";
 
     private static final int PERMISSION_REQUEST_CODE = 100;
+    public static final int REQUEST_CHECK_SETTING = 1001; //Request code for GPS Dialog
     private LocationRequest locationRequest;
     private CallbackContext newCallbackContext = null;
     private Activity activity;
