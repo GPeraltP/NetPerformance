@@ -21,11 +21,11 @@
 			<uses-permission android:name="android.permission.INTERNET" />
 			<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 		</config-file>
-		<config-file parent="/manifest/application*" target="AndroidManifest.xml">
-            <service android:name=".ServiceNet" />
-		</config-file>
+		<config-file target="AndroidManifest.xml" parent="/manifest/application">
+      		<service android:name="cordova.plugin.netperformance.ServiceNet" />
+        </config-file>
 		<source-file src="src/android/NetPerformance.java" target-dir="src/cordova-plugin-netperformance/NetPerformance" />
-		<source-file src="src/android/ServiceNet.java" target-dir="src/cordova-plugin-netperformance/ServiceNet" />
+		<source-file src="src/android/ServiceNet.java" target-dir="src/cordova-plugin-netperformance/NetPerformance" />
         <framework src="src/android/resource/build-extras.gradle" custom="true" type="gradleReference" />
 	</platform>
 </plugin>
