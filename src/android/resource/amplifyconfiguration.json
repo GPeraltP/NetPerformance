@@ -1,0 +1,67 @@
+{
+    "UserAgent": "aws-amplify-cli/2.0",
+    "Version": "1.0",
+    "auth": {
+        "plugins": {
+            "awsCognitoAuthPlugin": {
+                "UserAgent": "aws-amplify-cli/0.1.0",
+                "Version": "0.1.0",
+                "IdentityManager": {
+                    "Default": {}
+                },
+                "CredentialsProvider": {
+                    "CognitoIdentity": {
+                        "Default": {
+                            "PoolId": "us-east-1:f5e5e40d-fb51-417d-8b25-e529709d4450",
+                            "Region": "us-east-1"
+                        }
+                    }
+                },
+                "CognitoUserPool": {
+                    "Default": {
+                        "PoolId": "us-east-1_ZV2e4mZh9",
+                        "AppClientId": "4h4atcvp60u7vd7g1jha0lb6kg",
+                        "Region": "us-east-1"
+                    }
+                },
+                "Auth": {
+                    "Default": {
+                        "authenticationFlowType": "USER_SRP_AUTH",
+                        "loginMechanisms": [
+                            "PREFERRED_USERNAME"
+                        ],
+                        "signupAttributes": [
+                            "EMAIL"
+                        ],
+                        "passwordProtectionSettings": {
+                            "passwordPolicyMinLength": 8,
+                            "passwordPolicyCharacters": []
+                        },
+                        "mfaConfiguration": "OFF",
+                        "mfaTypes": [
+                            "SMS"
+                        ],
+                        "verificationMechanisms": [
+                            "PHONE_NUMBER"
+                        ]
+                    }
+                },
+                "S3TransferUtility": {
+                    "Default": {
+                        "Bucket": "bucketnetperformancesdk104120-dev",
+                        "Region": "us-east-1"
+                    }
+                }
+            }
+        }
+    },
+    "storage": {
+        "plugins": {
+            "awsS3StoragePlugin": {
+                "bucket": "bucketnetperformancesdk104120-dev",
+                "region": "us-east-1",
+                "defaultAccessLevel": "guest"
+            }
+        }
+    }
+}

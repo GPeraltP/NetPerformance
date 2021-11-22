@@ -34,6 +34,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,6 +46,25 @@ import fr.bmartel.speedtest.SpeedTestReport;
 import fr.bmartel.speedtest.SpeedTestSocket;
 import fr.bmartel.speedtest.inter.ISpeedTestListener;
 import fr.bmartel.speedtest.model.SpeedTestError;
+
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobile.client.Callback;
+import com.amazonaws.mobile.client.UserStateDetails;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferService;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amplifyframework.AmplifyException;
+import com.amplifyframework.auth.cognito.AWSCognitoAuthPlugin;
+import com.amplifyframework.core.Amplify;
+import com.amplifyframework.storage.s3.AWSS3StoragePlugin;
 
 import static android.location.LocationManager.GPS_PROVIDER;
 
@@ -61,52 +84,66 @@ public class ServiceNet extends Service {
         speedDownload.execute();
         speedUpload.execute();
         time = new Timer();
-        time.scheduleAtFixedRate(new TimerTask(){
-            @Override
-            public void run(){
-                JSONObject r = new JSONObject();
-                try {
-                    r.put("simOperatorName", getSimOperatorName());
-                    r.put("simOperator", getSimOperator());
-                    r.put("networkOperatorName", getNetworkOperatorName());
-                    r.put("networkOperator", getNetworkOperator());
-                    r.put("networkCountryIso", getNetworkCountryIso());
-                    r.put("deviceSoftwareVersion", getDeviceSoftwareVersion());
-                    r.put("phoneType", getPhoneType());
-                    r.put("isNetworkRoaming", isNetworkRoaming());
-                    r.put("simState", getSimState());
-                    r.put("networkType", getNetworkType());
-                    r.put("callState", getCallState());
-                    r.put("dataState", getDataState());
-                    r.put("groupIdLevel", getGroupIdLevel1());
-                    r.put("simCountryIso", getSimCountryIso());
-                    r.put("voiceMailAlphaTag", getVoiceMailAlphaTag());
-                    r.put("voiceMailNumber", getVoiceMailNumber());
-                    r.put("hasIccCard", hasIccCard());
-                    r.put("dataActivity", getDataActivity());
-                    r.put("signalQuality", getSignalQuality());
+
+        try {
+            // Add these lines to add the AWSCognitoAuthPlugin and AWSS3StoragePlugin plugins
+            Amplify.addPlugin(new AWSCognitoAuthPlugin());
+            Amplify.addPlugin(new AWSS3StoragePlugin());
+            Amplify.configure(getApplicationContext());
+
+            Log.i("MyAmplifyApp", "Initialized Amplify");
+
+            time.scheduleAtFixedRate(new TimerTask(){
+                @Override
+                public void run(){
+                    JSONObject r = new JSONObject();
+                    try {
+                        r.put("simOperatorName", getSimOperatorName());
+                        r.put("simOperator", getSimOperator());
+                        r.put("networkOperatorName", getNetworkOperatorName());
+                        r.put("networkOperator", getNetworkOperator());
+                        r.put("networkCountryIso", getNetworkCountryIso());
+                        r.put("deviceSoftwareVersion", getDeviceSoftwareVersion());
+                        r.put("phoneType", getPhoneType());
+                        r.put("isNetworkRoaming", isNetworkRoaming());
+                        r.put("simState", getSimState());
+                        r.put("networkType", getNetworkType());
+                        r.put("callState", getCallState());
+                        r.put("dataState", getDataState());
+                        r.put("groupIdLevel", getGroupIdLevel1());
+                        r.put("simCountryIso", getSimCountryIso());
+                        r.put("voiceMailAlphaTag", getVoiceMailAlphaTag());
+                        r.put("voiceMailNumber", getVoiceMailNumber());
+                        r.put("hasIccCard", hasIccCard());
+                        r.put("dataActivity", getDataActivity());
+                        r.put("signalQuality", getSignalQuality());
 //                r.put("latitude", getLatitude());
 //                r.put("longitude", getLongitude());
-                    r.put("location", getLocation());
+                        r.put("location", getLocation());
 //                r.put("imsi", getMSISDN()); Por OS
 //                r.put("model", getModel());
 
-                    r.put("downloadSpeed", downloadSpeed);
-                    r.put("uploadSpeed", uploadSpeed);
-                    r.put("bands", getNetworkBands());
-                    r.put("eNodeB", getENodeB());
-                    r.put("cellId", getCellId());
+                        r.put("downloadSpeed", downloadSpeed);
+                        r.put("uploadSpeed", uploadSpeed);
+                        r.put("bands", getNetworkBands());
+                        r.put("eNodeB", getENodeB());
+                        r.put("cellId", getCellId());
 
-                    //String data = formatJsonToCsv(r);
-                    //uploadWithTransferUtility(data);
+                        String data = formatJsonToCsv(r);
+                        uploadWithTransferUtility(data);
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    Log.i("tag", "Get speeds test every 5 seconds :: "+r.toString());
                 }
+            },3000,5000);
+        } catch (AmplifyException error) {
+            Log.e("MyAmplifyApp", "Could not initialize Amplify", error);
+        }
 
-                Log.i("tag", "Get speeds test every 5 seconds :: "+r.toString());
-            }
-        },3000,5000);
+
         return START_STICKY;
     }
 
@@ -154,6 +191,68 @@ public class ServiceNet extends Service {
         } catch (IllegalArgumentException ex) {
             Log.d("TAG", "gps provider does not exist " + ex.getMessage());
         }
+    }
+
+    /* Upload S3 */
+
+    public String formatJsonToCsv(JSONObject jData) throws JSONException {
+        StringBuilder builder = new StringBuilder();
+
+        Iterator<String> headers = jData.keys();
+        while (headers.hasNext()) {
+            String header = headers.next();
+            Object obj = jData.get(header);
+            if (obj instanceof JSONObject){
+                Iterator<String> subHeaders = ((JSONObject)obj).keys();
+                while (subHeaders.hasNext()) {
+                    String subHeader = subHeaders.next();
+                    builder.append(header).append("_").append(subHeader).append(",");
+                }
+            }else if (obj instanceof String){
+                builder.append(header).append(",");
+            }
+        }
+        // Remove last comma "," and append a new line
+        builder.deleteCharAt(builder.length() - 1);
+        builder.append(System.getProperty("line.separator"));
+
+        headers = jData.keys();
+        while (headers.hasNext()) {
+            String header = headers.next();
+            Object obj = jData.get(header);
+            if (obj instanceof JSONObject){
+                Iterator<String> subHeaders = ((JSONObject)obj).keys();
+                while (subHeaders.hasNext()) {
+                    String subHeader = subHeaders.next();
+                    builder.append(((JSONObject)obj).get(subHeader)).append(",");
+                }
+            }else if (obj instanceof String){
+                builder.append(jData.get(header)).append(",");
+            }
+        }
+        // Remove last comma "," and append a new line
+        builder.deleteCharAt(builder.length() - 1);
+        builder.append(System.getProperty("line.separator"));
+
+        return builder.toString();
+    }
+
+    public void uploadWithTransferUtility(String data) {
+        File file = new File(getApplicationContext().getFilesDir(), "data.csv");
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+            writer.append(data);
+            writer.close();
+        } catch (Exception e) {
+            Log.e("NetPerformance", e.getMessage());
+        }
+
+        Amplify.Storage.uploadFile(
+                "data",
+                file,
+                result -> Log.i("MyAmplifyApp", "Successfully uploaded: " + result.getKey()),
+                storageFailure -> Log.e("MyAmplifyApp", "Upload failed", storageFailure)
+        );
     }
 
     public JSONObject getNetworkBands() {

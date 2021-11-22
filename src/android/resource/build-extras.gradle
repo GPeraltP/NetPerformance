@@ -17,4 +17,6 @@ repositories {
 dependencies {
     implementation 'com.google.android.gms:play-services-location:18.0.0'
     implementation 'fr.bmartel:jspeedtest:1.32.1'
+    implementation 'com.amplifyframework:aws-storage-s3:1.28.3'
+    implementation 'com.amplifyframework:aws-auth-cognito:1.28.3'
 }
