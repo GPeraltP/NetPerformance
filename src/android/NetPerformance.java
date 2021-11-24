@@ -27,6 +27,8 @@ import android.os.Build;
 import android.Manifest;
 
 import android.app.Activity;
+import android.util.AndroidRuntimeException;
+import android.util.Log;
 
 /**
  * This class echoes a string called from JavaScript.
@@ -53,9 +55,12 @@ public class NetPerformance extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
         activity = cordova.getActivity();
-
-        JSONObject jsonArgs = args.getJSONObject(0);
-
+        JSONObject jsonArgs = new JSONObject();
+        try{
+            jsonArgs = args.getJSONObject(0);
+        }catch (JSONException e){
+            Log.i("NetPerformance", e.getMessage());
+        }
 
         if (ACTION_REQUEST_PERMISSION.equals(action)) {
             
@@ -67,14 +72,25 @@ public class NetPerformance extends CordovaPlugin {
             this.enableGPS();
             return true;
         }else if(ACTION_START_PERFORM.equals(action)){
+            JSONObject finalJsonArgs = jsonArgs;
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    String phone = "", imei = "", brand = "", model = "";
+
+                    try {
+                        phone = finalJsonArgs.getString(KEY_PHONE);
+                        imei = finalJsonArgs.getString(KEY_IMEI);
+                        brand = finalJsonArgs.getString(KEY_BRAND);
+                        model = finalJsonArgs.getString(KEY_MODEL);
+                    }catch (JSONException e){
+                        Log.i("NetPerform",e.getMessage());
+                    }
                     Intent i = new Intent(activity, ServiceNet.class);
-                    i.putExtra(KEY_PHONE,jsonArgs.getString(KEY_PHONE));
-                    i.putExtra(KEY_IMEI,jsonArgs.getString(KEY_IMEI));
-                    i.putExtra(KEY_BRAND,jsonArgs.getString(KEY_BRAND));
-                    i.putExtra(KEY_MODEL,jsonArgs.getString(KEY_MODEL));
+                    i.putExtra(KEY_PHONE,phone);
+                    i.putExtra(KEY_IMEI,imei);
+                    i.putExtra(KEY_BRAND,brand);
+                    i.putExtra(KEY_MODEL,model);
                     activity.getApplicationContext().startService(i);
                     callbackContext.success();
                 }
