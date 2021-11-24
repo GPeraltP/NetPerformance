@@ -1,6 +1,5 @@
 package cordova.plugin.netperformance;
 
-import cordova.plugin.netperformance.ServiceNet;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
@@ -22,26 +21,12 @@ import com.google.android.gms.tasks.Task;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.content.Context;
-
-import android.telephony.CellInfo;
-import android.telephony.CellInfoGsm;
-import android.telephony.CellInfoLte;
-import android.telephony.CellInfoWcdma;
-import android.telephony.gsm.GsmCellLocation;
-import android.telephony.TelephonyManager;
-
-import android.util.Log;
 
 import android.os.Build;
-import android.os.Bundle;
-
-import android.widget.Toast;
 
 import android.Manifest;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 
 /**
  * This class echoes a string called from JavaScript.
@@ -53,6 +38,11 @@ public class NetPerformance extends CordovaPlugin {
     private static final String ACTION_REQUEST_PERMISSION = "requestRequiredPermission";
     private static final String ACTION_ENABLE_GPS_DIALOG = "enableGPSDialog";
 
+    private static final String KEY_PHONE = "KEY_PHONE";
+    private static final String KEY_IMEI = "KEY_IMEI";
+    private static final String KEY_BRAND = "KEY_BRAND";
+    private static final String KEY_MODEL = "KEY_MODEL";
+
     private static final int PERMISSION_REQUEST_CODE = 100;
     public static final int REQUEST_CHECK_SETTING = 1001; //Request code for GPS Dialog
     private LocationRequest locationRequest;
@@ -63,6 +53,9 @@ public class NetPerformance extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
         activity = cordova.getActivity();
+
+        JSONObject jsonArgs = args.getJSONObject(0);
+
 
         if (ACTION_REQUEST_PERMISSION.equals(action)) {
             
@@ -77,7 +70,12 @@ public class NetPerformance extends CordovaPlugin {
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    activity.getApplicationContext().startService(new Intent(activity, ServiceNet.class));
+                    Intent i = new Intent(activity, ServiceNet.class);
+                    i.putExtra(KEY_PHONE,jsonArgs.getString(KEY_PHONE));
+                    i.putExtra(KEY_IMEI,jsonArgs.getString(KEY_IMEI));
+                    i.putExtra(KEY_BRAND,jsonArgs.getString(KEY_BRAND));
+                    i.putExtra(KEY_MODEL,jsonArgs.getString(KEY_MODEL));
+                    activity.getApplicationContext().startService(i);
                     callbackContext.success();
                 }
             });

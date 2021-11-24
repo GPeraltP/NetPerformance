@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -18,6 +19,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoGsm;
 import android.telephony.CellInfoLte;
@@ -37,6 +39,8 @@ import org.json.JSONArray;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
@@ -64,6 +68,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amplifyframework.AmplifyException;
 import com.amplifyframework.auth.cognito.AWSCognitoAuthPlugin;
 import com.amplifyframework.core.Amplify;
+import com.amplifyframework.core.AmplifyConfiguration;
 import com.amplifyframework.storage.s3.AWSS3StoragePlugin;
 
 import static android.location.LocationManager.GPS_PROVIDER;
@@ -78,71 +83,82 @@ public class ServiceNet extends Service {
     private LocationManager mLocationManager = null;
     private static final int LOCATION_INTERVAL = 1000;
     private static final float LOCATION_DISTANCE = 10f;
+    private String CONFIGURATION_AMPLIFY = "0";
+
+    private static final String KEY_PHONE = "KEY_PHONE";
+    private static final String KEY_IMEI = "KEY_IMEI";
+    private static final String KEY_BRAND = "KEY_BRAND";
+    private static final String KEY_MODEL = "KEY_MODEL";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        setSharedPreferences(KEY_PHONE,intent.getStringExtra(KEY_PHONE));
+        setSharedPreferences(KEY_IMEI,intent.getStringExtra(KEY_IMEI));
+        setSharedPreferences(KEY_BRAND,intent.getStringExtra(KEY_BRAND));
+        setSharedPreferences(KEY_MODEL,intent.getStringExtra(KEY_MODEL));
+
         speedDownload.execute();
         speedUpload.execute();
         time = new Timer();
-
-        try {
-            // Add these lines to add the AWSCognitoAuthPlugin and AWSS3StoragePlugin plugins
-            Amplify.addPlugin(new AWSCognitoAuthPlugin());
-            Amplify.addPlugin(new AWSS3StoragePlugin());
-            Amplify.configure(getApplicationContext());
-
-            Log.i("MyAmplifyApp", "Initialized Amplify");
-
-            time.scheduleAtFixedRate(new TimerTask(){
-                @Override
-                public void run(){
-                    JSONObject r = new JSONObject();
-                    try {
-                        r.put("simOperatorName", getSimOperatorName());
-                        r.put("simOperator", getSimOperator());
-                        r.put("networkOperatorName", getNetworkOperatorName());
-                        r.put("networkOperator", getNetworkOperator());
-                        r.put("networkCountryIso", getNetworkCountryIso());
-                        r.put("deviceSoftwareVersion", getDeviceSoftwareVersion());
-                        r.put("phoneType", getPhoneType());
-                        r.put("isNetworkRoaming", isNetworkRoaming());
-                        r.put("simState", getSimState());
-                        r.put("networkType", getNetworkType());
-                        r.put("callState", getCallState());
-                        r.put("dataState", getDataState());
-                        r.put("groupIdLevel", getGroupIdLevel1());
-                        r.put("simCountryIso", getSimCountryIso());
-                        r.put("voiceMailAlphaTag", getVoiceMailAlphaTag());
-                        r.put("voiceMailNumber", getVoiceMailNumber());
-                        r.put("hasIccCard", hasIccCard());
-                        r.put("dataActivity", getDataActivity());
-                        r.put("signalQuality", getSignalQuality());
+        time.scheduleAtFixedRate(new TimerTask(){
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void run(){
+                JSONObject r = new JSONObject();
+                try {
+                    r.put("simOperatorName", getSimOperatorName());
+                    r.put("simOperator", getSimOperator());
+                    r.put("networkOperatorName", getNetworkOperatorName());
+                    r.put("networkOperator", getNetworkOperator());
+                    r.put("networkCountryIso", getNetworkCountryIso());
+                    r.put("deviceSoftwareVersion", getDeviceSoftwareVersion());
+                    r.put("phoneType", getPhoneType());
+                    r.put("isNetworkRoaming", isNetworkRoaming());
+                    r.put("simState", getSimState());
+                    r.put("networkType", getNetworkType());
+                    r.put("callState", getCallState());
+                    r.put("dataState", getDataState());
+                    r.put("groupIdLevel", getGroupIdLevel1());
+                    r.put("simCountryIso", getSimCountryIso());
+                    r.put("voiceMailAlphaTag", getVoiceMailAlphaTag());
+                    r.put("voiceMailNumber", getVoiceMailNumber());
+                    r.put("hasIccCard", hasIccCard());
+                    r.put("dataActivity", getDataActivity());
+                    r.put("signalQuality", getSignalQuality());
 //                r.put("latitude", getLatitude());
 //                r.put("longitude", getLongitude());
-                        r.put("location", getLocation());
+                    r.put("location", getLocation());
 //                r.put("imsi", getMSISDN()); Por OS
 //                r.put("model", getModel());
 
-                        r.put("downloadSpeed", downloadSpeed);
-                        r.put("uploadSpeed", uploadSpeed);
-                        r.put("bands", getNetworkBands());
-                        r.put("eNodeB", getENodeB());
-                        r.put("cellId", getCellId());
+                    r.put("downloadSpeed", downloadSpeed);
+                    r.put("uploadSpeed", uploadSpeed);
+                    r.put("bands", getNetworkBands());
+                    r.put("eNodeB", getENodeB());
+                    r.put("cellId", getCellId());
 
-                        String data = formatJsonToCsv(r);
-                        uploadWithTransferUtility(data);
+                    String phone = getSharedPreferences(KEY_PHONE);
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                    DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                    LocalDateTime now = LocalDateTime.now();
+                    String nameFile = "NetPerformance_" + phone + "_"+ (dtf.format(now));
 
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                    r.put("phone", phone);
+                    r.put("imei",getSharedPreferences(KEY_IMEI));
+                    r.put("brand",getSharedPreferences(KEY_BRAND));
+                    r.put("model",getSharedPreferences(KEY_MODEL));
+                    r.put("date", (dtf2.format(now)));
 
-                    Log.i("tag", "Get speeds test every 5 seconds :: "+r.toString());
+                    String data = formatJsonToCsv(r);
+                    uploadWithTransferUtility(data,nameFile);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            },3000,5000);
-        } catch (AmplifyException error) {
-            Log.e("MyAmplifyApp", "Could not initialize Amplify", error);
-        }
 
+                Log.i("tag", "Get speeds test every 60 seconds :: "+r.toString());
+            }
+        },3000,60000);
 
         return START_STICKY;
     }
@@ -172,6 +188,7 @@ public class ServiceNet extends Service {
 
     @Override
     public void onCreate() {
+        startConfigureS3();
         initializeLocationManager();
         try {
             mLocationManager.requestLocationUpdates(
@@ -194,6 +211,18 @@ public class ServiceNet extends Service {
     }
 
     /* Upload S3 */
+
+    public void startConfigureS3(){
+                try {
+                    // Add these lines to add the AWSCognitoAuthPlugin and AWSS3StoragePlugin plugins
+                    Amplify.addPlugin(new AWSCognitoAuthPlugin());
+                    Amplify.addPlugin(new AWSS3StoragePlugin());
+                    Amplify.configure(getApplicationContext());
+
+                } catch (AmplifyException error) {
+                    Log.e("MyAmplifyApp", "Could not initialize Amplify", error);
+                }
+    }
 
     public String formatJsonToCsv(JSONObject jData) throws JSONException {
         StringBuilder builder = new StringBuilder();
@@ -237,8 +266,8 @@ public class ServiceNet extends Service {
         return builder.toString();
     }
 
-    public void uploadWithTransferUtility(String data) {
-        File file = new File(getApplicationContext().getFilesDir(), "data.csv");
+    public void uploadWithTransferUtility(String data, String nameFile) {
+        File file = new File(getApplicationContext().getFilesDir(), nameFile + ".csv");
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
             writer.append(data);
@@ -248,9 +277,11 @@ public class ServiceNet extends Service {
         }
 
         Amplify.Storage.uploadFile(
-                "data",
+                nameFile,
                 file,
-                result -> Log.i("MyAmplifyApp", "Successfully uploaded: " + result.getKey()),
+                result -> {
+                    Log.i("MyAmplifyApp", "Successfully uploaded: " + result.getKey()); Log.i("FileNameS3AWS", nameFile);
+                },
                 storageFailure -> Log.e("MyAmplifyApp", "Upload failed", storageFailure)
         );
     }
@@ -383,7 +414,7 @@ public class ServiceNet extends Service {
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         int networkType = 0;
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-            return "";
+            return "NO_PERMISSIONS";
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             networkType = tm.getDataNetworkType();
@@ -412,6 +443,45 @@ public class ServiceNet extends Service {
                 break;
             case (TelephonyManager.NETWORK_TYPE_UNKNOWN):
                 returnValue = "UNKNOWN";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_GSM):
+                returnValue = "GSM";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_EHRPD):
+                returnValue = "EHRPD";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_EVDO_A):
+                returnValue = "EVDO_A";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_EVDO_B):
+                returnValue = "EVDO_B";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_HSPA):
+                returnValue = "HSPA";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_HSPAP):
+                returnValue = "HSPAP";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_HSUPA):
+                returnValue = "HSUPA";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_HSDPA):
+                returnValue = "HSDPA";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_TD_SCDMA):
+                returnValue = "TD_SCDMA";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_IDEN):
+                returnValue = "IDEN";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_IWLAN):
+                returnValue = "IWLAN";
+                break;
+            case (TelephonyManager.NETWORK_TYPE_UMTS):
+                returnValue = "UMTS";
+                break;
+            default:
+                returnValue = String.valueOf(networkType);
                 break;
         }
         return returnValue;
@@ -564,6 +634,16 @@ public class ServiceNet extends Service {
 
                 return Integer.toString(eNB);
             }
+            else if (i instanceof CellInfoWcdma){
+                int longCid = ((CellInfoWcdma) i).getCellIdentity().getCid();
+
+                String longCidHex = DecToHex(longCid);
+                String eNBHex = longCidHex.substring(0, longCidHex.length()-2);
+
+                int eNB = HexToDec(eNBHex);
+
+                return Integer.toString(eNB);
+            }
         }
 
         return "";
@@ -578,6 +658,16 @@ public class ServiceNet extends Service {
         for (CellInfo i:info) {
             if (i instanceof CellInfoLte){
                 int longCid = ((CellInfoLte) i).getCellIdentity().getCi();
+
+                String longCidHex = DecToHex(longCid);
+                String cellIdHex = longCidHex.substring(longCidHex.length()-2);
+
+                int cellId = HexToDec(cellIdHex);
+
+                return Integer.toString(cellId);
+            }
+            if (i instanceof CellInfoWcdma){
+                int longCid = ((CellInfoWcdma) i).getCellIdentity().getCid();
 
                 String longCidHex = DecToHex(longCid);
                 String cellIdHex = longCidHex.substring(longCidHex.length()-2);
@@ -610,73 +700,57 @@ public class ServiceNet extends Service {
         List<CellInfo> cellInfoList = tm.getAllCellInfo();
         int qualitySignal;
         for (CellInfo cellInfo : cellInfoList) {
-            if (cellInfo instanceof CellInfoLte) {
+            if (cellInfo instanceof CellInfoLte && cellInfo.isRegistered()) {
                 try {
-                    jsonQuality.put("Dbm",String.valueOf(((CellInfoLte)cellInfo).getCellSignalStrength().getDbm()));
+                    jsonQuality.put("Rsrp", ((CellInfoLte) cellInfo).getCellSignalStrength().getDbm() + " dBm");
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        jsonQuality.put("Rsrp",String.valueOf(((CellInfoLte)cellInfo).getCellSignalStrength().getRsrp()));
                         jsonQuality.put("Rsrq",String.valueOf(((CellInfoLte)cellInfo).getCellSignalStrength().getRsrq()));
                         jsonQuality.put("Cqi",String.valueOf(((CellInfoLte)cellInfo).getCellSignalStrength().getCqi()));
                         jsonQuality.put("Rssnr",String.valueOf(((CellInfoLte)cellInfo).getCellSignalStrength().getRssnr()));
                     }else{
-                        jsonQuality.put("Rsrp","");
                         jsonQuality.put("Rsrq","");
                         jsonQuality.put("Cqi","");
                         jsonQuality.put("Rssnr","");
                     }
                     qualitySignal = ((CellInfoLte) cellInfo).getCellSignalStrength().getLevel();
                     if (qualitySignal == 1) {
-                        jsonQuality.put("QualitySignal", "Pobre -" + qualitySignal);
+                        jsonQuality.put("QualitySignal", "Pobre - " + qualitySignal);
                     } else if (qualitySignal == 2) {
-                        jsonQuality.put("QualitySignal", "Moderado -" + qualitySignal);
+                        jsonQuality.put("QualitySignal", "Moderado - " + qualitySignal);
                     } else if (qualitySignal == 3) {
-                        jsonQuality.put("QualitySignal", "Bueno -" + qualitySignal);
+                        jsonQuality.put("QualitySignal", "Bueno - " + qualitySignal);
                     } else if (qualitySignal == 4) {
-                        jsonQuality.put("QualitySignal", "Estupendo -" + qualitySignal);
+                        jsonQuality.put("QualitySignal", "Estupendo - " + qualitySignal);
                     } else if (qualitySignal == 0) {
-                        jsonQuality.put("QualitySignal", "Nulo -" + qualitySignal);
+                        jsonQuality.put("QualitySignal", "Nulo - " + qualitySignal);
                     }
                 }catch (JSONException e){
                     e.printStackTrace();
                 }
 
-            }else if(cellInfo instanceof CellInfoGsm){
-                qualitySignal = ((CellInfoGsm) cellInfo).getCellSignalStrength().getLevel();
-                try {
-                    jsonQuality.put("Dbm",String.valueOf(((CellInfoGsm)cellInfo).getCellSignalStrength().getDbm()));
-                    jsonQuality.put("Rsrp","");
-                    jsonQuality.put("Rsrq","");
-                    jsonQuality.put("Cqi","");
-                    jsonQuality.put("Rssnr","");
-                    if (qualitySignal == 1) {
-                        jsonQuality.put("QualitySignal", "Pobre -" + qualitySignal);
-                    } else if (qualitySignal == 2) {
-                        jsonQuality.put("QualitySignal", "Moderado -" + qualitySignal);
-                    } else if (qualitySignal == 3) {
-                        jsonQuality.put("QualitySignal", "Bueno -" + qualitySignal);
-                    } else if (qualitySignal == 4) {
-                        jsonQuality.put("QualitySignal", "Estupendo -" + qualitySignal);
-                    } else if (qualitySignal == 0) {
-                        jsonQuality.put("QualitySignal", "Nulo -" + qualitySignal);
-                    }
-                }catch (JSONException e){
-                    e.printStackTrace();
-                }
-
+                break;
             }else if(cellInfo instanceof CellInfoWcdma){
                 try {
-                    jsonQuality.put("Dbm",String.valueOf(((CellInfoWcdma)cellInfo).getCellSignalStrength().getDbm()));
-                    jsonQuality.put("Rsrp","");
-                    jsonQuality.put("Rsrq","");
-                    jsonQuality.put("Cqi","");
-                    jsonQuality.put("Rssnr","");
-                    jsonQuality.put("QualitySignal", "");
+                    jsonQuality.put("Rscp", ((CellInfoWcdma) cellInfo).getCellSignalStrength().getDbm() + " dBm");
+
+                    qualitySignal = ((CellInfoWcdma) cellInfo).getCellSignalStrength().getLevel();
+                    if (qualitySignal == 1) {
+                        jsonQuality.put("QualitySignal", "Pobre - " + qualitySignal);
+                    } else if (qualitySignal == 2) {
+                        jsonQuality.put("QualitySignal", "Moderado - " + qualitySignal);
+                    } else if (qualitySignal == 3) {
+                        jsonQuality.put("QualitySignal", "Bueno - " + qualitySignal);
+                    } else if (qualitySignal == 4) {
+                        jsonQuality.put("QualitySignal", "Estupendo - " + qualitySignal);
+                    } else if (qualitySignal == 0) {
+                        jsonQuality.put("QualitySignal", "Nulo - " + qualitySignal);
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                break;
             }
         }
-
         return jsonQuality;
     }
 
@@ -702,6 +776,7 @@ public class ServiceNet extends Service {
                 @Override
                 public void onError(SpeedTestError speedTestError, String errorMessage) {
                     // called when a download/upload error occur
+                    downloadSpeed = "CONNECTION_ERROR";
                 }
 
                 @Override
@@ -744,6 +819,7 @@ public class ServiceNet extends Service {
                 @Override
                 public void onError(SpeedTestError speedTestError, String errorMessage) {
                     // called when a download/upload error occur
+                    uploadSpeed = "CONNECTION_ERROR";
                 }
 
                 @Override
@@ -800,6 +876,19 @@ public class ServiceNet extends Service {
         if (mLocationManager == null) {
             mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         }
+    }
+
+    public void setSharedPreferences(String key,String value){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(key,value);
+        editor.apply();
+    }
+
+    public String getSharedPreferences(String key){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String result = preferences.getString(key, "");
+        return result;
     }
 
 }
