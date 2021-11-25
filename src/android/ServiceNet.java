@@ -26,7 +26,6 @@ import android.telephony.CellInfoLte;
 import android.telephony.CellInfoWcdma;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -617,14 +616,16 @@ public class ServiceNet extends Service {
         return jLocation;
     }
 
-    public String getENodeB() {
+    public JSONObject getENodeB() throws JSONException {
+        JSONObject jResponse = new JSONObject();
+
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return "";
+            return jResponse;
         }
         List<CellInfo> info = tm.getAllCellInfo();
         for (CellInfo i:info) {
-            if (i instanceof CellInfoLte){
+            if (i instanceof CellInfoLte && i.isRegistered()){
                 int longCid = ((CellInfoLte) i).getCellIdentity().getCi();
 
                 String longCidHex = DecToHex(longCid);
@@ -632,9 +633,9 @@ public class ServiceNet extends Service {
 
                 int eNB = HexToDec(eNBHex);
 
-                return Integer.toString(eNB);
+                jResponse.put("LTE", eNB);
             }
-            else if (i instanceof CellInfoWcdma){
+            if (i instanceof CellInfoWcdma && i.isRegistered()){
                 int longCid = ((CellInfoWcdma) i).getCellIdentity().getCid();
 
                 String longCidHex = DecToHex(longCid);
@@ -642,21 +643,33 @@ public class ServiceNet extends Service {
 
                 int eNB = HexToDec(eNBHex);
 
-                return Integer.toString(eNB);
+                jResponse.put("WCDMA", eNB);
+            }
+            if (i instanceof CellInfoGsm && i.isRegistered()){
+                int longCid = ((CellInfoGsm) i).getCellIdentity().getCid();
+
+                String longCidHex = DecToHex(longCid);
+                String eNBHex = longCidHex.substring(0, longCidHex.length()-2);
+
+                int eNB = HexToDec(eNBHex);
+
+                jResponse.put("GSM", eNB);
             }
         }
 
-        return "";
+        return jResponse;
     }
 
-    public String getCellId() {
+    public JSONObject getCellId() throws JSONException {
+        JSONObject jResponse = new JSONObject();
+
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return "";
+            return jResponse;
         }
         List<CellInfo> info = tm.getAllCellInfo();
         for (CellInfo i:info) {
-            if (i instanceof CellInfoLte){
+            if (i instanceof CellInfoLte && i.isRegistered()){
                 int longCid = ((CellInfoLte) i).getCellIdentity().getCi();
 
                 String longCidHex = DecToHex(longCid);
@@ -664,9 +677,9 @@ public class ServiceNet extends Service {
 
                 int cellId = HexToDec(cellIdHex);
 
-                return Integer.toString(cellId);
+                jResponse.put("LTE", cellId);
             }
-            if (i instanceof CellInfoWcdma){
+            if (i instanceof CellInfoWcdma && i.isRegistered()){
                 int longCid = ((CellInfoWcdma) i).getCellIdentity().getCid();
 
                 String longCidHex = DecToHex(longCid);
@@ -674,11 +687,21 @@ public class ServiceNet extends Service {
 
                 int cellId = HexToDec(cellIdHex);
 
-                return Integer.toString(cellId);
+                jResponse.put("WCDMA", cellId);
+            }
+            if (i instanceof CellInfoGsm && i.isRegistered()){
+                int longCid = ((CellInfoGsm) i).getCellIdentity().getCid();
+
+                String longCidHex = DecToHex(longCid);
+                String cellIdHex = longCidHex.substring(longCidHex.length()-2);
+
+                int cellId = HexToDec(cellIdHex);
+
+                jResponse.put("GSM", cellId);
             }
         }
 
-        return "";
+        return jResponse;
     }
 
     // Decimal -> hexadecimal
@@ -728,10 +751,13 @@ public class ServiceNet extends Service {
                     e.printStackTrace();
                 }
 
-                break;
-            }else if(cellInfo instanceof CellInfoWcdma){
+            }
+            if(cellInfo instanceof CellInfoWcdma && cellInfo.isRegistered()){
                 try {
                     jsonQuality.put("Rscp", ((CellInfoWcdma) cellInfo).getCellSignalStrength().getDbm() + " dBm");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        jsonQuality.put("EcNo Wcdma", ((CellInfoWcdma) cellInfo).getCellSignalStrength().getEcNo());
+                    }
 
                     qualitySignal = ((CellInfoWcdma) cellInfo).getCellSignalStrength().getLevel();
                     if (qualitySignal == 1) {
@@ -748,7 +774,26 @@ public class ServiceNet extends Service {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                break;
+            }
+            if(cellInfo instanceof CellInfoGsm && cellInfo.isRegistered()){
+                try {
+                    jsonQuality.put("Rssi", ((CellInfoGsm) cellInfo).getCellSignalStrength().getDbm() + " dBm");
+
+                    qualitySignal = ((CellInfoGsm) cellInfo).getCellSignalStrength().getLevel();
+                    if (qualitySignal == 1) {
+                        jsonQuality.put("QualitySignal", "Pobre - " + qualitySignal);
+                    } else if (qualitySignal == 2) {
+                        jsonQuality.put("QualitySignal", "Moderado - " + qualitySignal);
+                    } else if (qualitySignal == 3) {
+                        jsonQuality.put("QualitySignal", "Bueno - " + qualitySignal);
+                    } else if (qualitySignal == 4) {
+                        jsonQuality.put("QualitySignal", "Estupendo - " + qualitySignal);
+                    } else if (qualitySignal == 0) {
+                        jsonQuality.put("QualitySignal", "Nulo - " + qualitySignal);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return jsonQuality;
