@@ -44,6 +44,7 @@ public class NetPerformance extends CordovaPlugin {
     private static final String KEY_IMEI = "KEY_IMEI";
     private static final String KEY_BRAND = "KEY_BRAND";
     private static final String KEY_MODEL = "KEY_MODEL";
+    private static final String KEY_MINUTE = "KEY_MINUTE";
 
     private static final int PERMISSION_REQUEST_CODE = 100;
     public static final int REQUEST_CHECK_SETTING = 1001; //Request code for GPS Dialog
@@ -76,13 +77,14 @@ public class NetPerformance extends CordovaPlugin {
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    String phone = "", imei = "", brand = "", model = "";
+                    String phone = "", imei = "", brand = "", model = "", minute = "";
 
                     try {
                         phone = finalJsonArgs.getString(KEY_PHONE);
                         imei = finalJsonArgs.getString(KEY_IMEI);
                         brand = finalJsonArgs.getString(KEY_BRAND);
                         model = finalJsonArgs.getString(KEY_MODEL);
+                        minute = finalJsonArgs.getString(KEY_MINUTE);
                     }catch (JSONException e){
                         Log.i("NetPerform",e.getMessage());
                     }

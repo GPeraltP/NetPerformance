@@ -88,6 +88,7 @@ public class ServiceNet extends Service {
     private static final String KEY_IMEI = "KEY_IMEI";
     private static final String KEY_BRAND = "KEY_BRAND";
     private static final String KEY_MODEL = "KEY_MODEL";
+    private static final String KEY_MINUTE = "KEY_MINUTE";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -95,7 +96,8 @@ public class ServiceNet extends Service {
         setSharedPreferences(KEY_IMEI,intent.getStringExtra(KEY_IMEI));
         setSharedPreferences(KEY_BRAND,intent.getStringExtra(KEY_BRAND));
         setSharedPreferences(KEY_MODEL,intent.getStringExtra(KEY_MODEL));
-
+        setSharedPreferences(KEY_MODEL,intent.getStringExtra(KEY_MINUTE));
+        
         speedDownload.execute();
         speedUpload.execute();
         time = new Timer();
@@ -157,7 +159,7 @@ public class ServiceNet extends Service {
 
                 Log.i("tag", "Get speeds test every 60 seconds :: "+r.toString());
             }
-        },3000,60000);
+        },3000,convertStringMinToMs(getSharedPreferences(KEY_MINUTE)));
 
         return START_STICKY;
     }
@@ -934,6 +936,10 @@ public class ServiceNet extends Service {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String result = preferences.getString(key, "");
         return result;
+    }
+
+    public int convertStringMinToMs(String minutes){
+        return Integer.parseInt(minute) * 60000;
     }
 
 }
