@@ -93,6 +93,7 @@ public class NetPerformance extends CordovaPlugin {
                     i.putExtra(KEY_IMEI,imei);
                     i.putExtra(KEY_BRAND,brand);
                     i.putExtra(KEY_MODEL,model);
+                    i.putExtra(KEY_MINUTE,minute);
                     activity.getApplicationContext().startService(i);
                     callbackContext.success();
                 }

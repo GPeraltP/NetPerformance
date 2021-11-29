@@ -96,8 +96,8 @@ public class ServiceNet extends Service {
         setSharedPreferences(KEY_IMEI,intent.getStringExtra(KEY_IMEI));
         setSharedPreferences(KEY_BRAND,intent.getStringExtra(KEY_BRAND));
         setSharedPreferences(KEY_MODEL,intent.getStringExtra(KEY_MODEL));
-        setSharedPreferences(KEY_MODEL,intent.getStringExtra(KEY_MINUTE));
-        
+        setSharedPreferences(KEY_MINUTE,intent.getStringExtra(KEY_MINUTE));
+        int timeLoop = convertStringMinToMs(getSharedPreferences(KEY_MINUTE));
         speedDownload.execute();
         speedUpload.execute();
         time = new Timer();
@@ -159,7 +159,7 @@ public class ServiceNet extends Service {
 
                 Log.i("tag", "Get speeds test every 60 seconds :: "+r.toString());
             }
-        },3000,convertStringMinToMs(getSharedPreferences(KEY_MINUTE)));
+        },3000,timeLoop);
 
         return START_STICKY;
     }
@@ -939,7 +939,7 @@ public class ServiceNet extends Service {
     }
 
     public int convertStringMinToMs(String minutes){
-        return Integer.parseInt(minute) * 60000;
+        return Integer.parseInt(minutes) * 60000;
     }
 
 }
