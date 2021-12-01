@@ -156,8 +156,6 @@ public class ServiceNet extends Service {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
-                Log.i("tag", "Get speeds test every 60 seconds :: "+r.toString());
             }
         },3000,timeLoop);
 
