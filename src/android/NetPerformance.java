@@ -35,6 +35,9 @@ import android.util.Log;
  */
 public class NetPerformance extends CordovaPlugin {
 
+    private PluginResult pluginResultOK = new PluginResult(PluginResult.Status.OK,"1");
+    private PluginResult pluginResultERROR = new PluginResult(PluginResult.Status.ERROR,"0");
+
     private static final String ACTION_START_PERFORM = "startNetPerformData";
     private static final String ACTION_STOP_PERFORM = "stopNetPerformData";
     private static final String ACTION_REQUEST_PERMISSION = "requestRequiredPermission";
@@ -192,20 +195,20 @@ public class NetPerformance extends CordovaPlugin {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         //Check Answer Google GPS Dialog
-        PluginResult pluginResult;
+
         if (requestCode == REQUEST_CHECK_SETTING){
             switch (resultCode){
 
                 case Activity.RESULT_OK:
-                    pluginResult = new PluginResult(PluginResult.Status.OK,"1");
-                    Log.d("ActivityResult OK", pluginResult.toString());
-                    newCallbackContext.sendPluginResult(pluginResult);
+                    
+                    Log.d("ActivityResult OK", pluginResultOK.toString());
+                    newCallbackContext.sendPluginResult(pluginResultOK);
                 break;
 
                 case Activity.RESULT_CANCELED:
                     pluginResult = new PluginResult(PluginResult.Status.ERROR,"0");
-                    Log.d("ActivityResult CANCELED", pluginResult.toString());
-                    newCallbackContext.sendPluginResult(pluginResult);
+                    Log.d("ActivityResult CANCELED", pluginResultERROR.toString());
+                    newCallbackContext.sendPluginResult(pluginResultERROR);
                 break;
             }
         }
