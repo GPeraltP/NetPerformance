@@ -198,11 +198,13 @@ public class NetPerformance extends CordovaPlugin {
 
                 case Activity.RESULT_OK:
                     pluginResult = new PluginResult(PluginResult.Status.OK,"1");
+                    Log.d("ActivityResult OK", pluginResult.toString());
                     newCallbackContext.sendPluginResult(pluginResult);
                 break;
 
                 case Activity.RESULT_CANCELED:
                     pluginResult = new PluginResult(PluginResult.Status.ERROR,"0");
+                    Log.d("ActivityResult CANCELED", pluginResult.toString());
                     newCallbackContext.sendPluginResult(pluginResult);
                 break;
             }
