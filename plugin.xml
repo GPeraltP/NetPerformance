@@ -22,9 +22,9 @@
 			<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 			<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 		</config-file>
-		<!-- <config-file target="AndroidManifest.xml" parent="/manifest/application">
+		<config-file target="AndroidManifest.xml" parent="/manifest/application">
       		<service android:name="cordova.plugin.netperformance.ServiceNet" />
-        	</config-file> -->
+        </config-file>
 		<resource-file src="src/android/resource/amplifyconfiguration.json" target="res/raw/amplifyconfiguration.json"/>
 		<resource-file src="src/android/resource/awsconfiguration.json" target="res/raw/awsconfiguration.json" />
 		<source-file src="src/android/NetPerformance.java" target-dir="src/cordova-plugin-netperformance/NetPerformance" />

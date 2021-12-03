@@ -137,6 +137,7 @@ public class ServiceNet extends Service {
                     r.put("bands", getNetworkBands());
                     r.put("eNodeB", getENodeB());
                     r.put("cellId", getCellId());
+                    r.put("lac", getLac());
 
                     String phone = getSharedPreferences(KEY_PHONE);
                     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -797,6 +798,31 @@ public class ServiceNet extends Service {
             }
         }
         return jsonQuality;
+    }
+
+    public JSONObject getLac() {
+    JSONObject lacs = new JSONObject();
+    try {
+        TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return lacs;
+        }
+        List<CellInfo> info = tm.getAllCellInfo();
+        for (CellInfo i :
+                info) {
+            if (i instanceof CellInfoWcdma) {
+                lacs.put("Wcdma", ((CellInfoWcdma) i).getCellIdentity().getLac() != Integer.MAX_VALUE ? ((CellInfoWcdma) i).getCellIdentity().getLac() : "UNAVAILABLE");
+            }
+            if (i instanceof CellInfoGsm) {
+                lacs.put("Gsm", ((CellInfoGsm) i).getCellIdentity().getLac() != Integer.MAX_VALUE ? ((CellInfoGsm) i).getCellIdentity().getLac() : "UNAVAILABLE");
+            }
+        }
+    }catch (JSONException e){
+        Log.e("NetPerformance", "getLacs: ", e);
+        return lacs;
+    }
+
+    return lacs;
     }
 
     public class SpeedDownloadTestTask extends AsyncTask<Void, Void, String> {
