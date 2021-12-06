@@ -37,6 +37,7 @@ public class NetPerformance extends CordovaPlugin {
 
     private PluginResult pluginResultOK = new PluginResult(PluginResult.Status.OK,"1");
     private PluginResult pluginResultERROR = new PluginResult(PluginResult.Status.ERROR,"0");
+    private PluginResult pluginResultNORESULT = new  PluginResult(PluginResult.Status.NO_RESULT);
 
     private static final String ACTION_START_PERFORM = "startNetPerformData";
     private static final String ACTION_STOP_PERFORM = "stopNetPerformData";
@@ -67,12 +68,13 @@ public class NetPerformance extends CordovaPlugin {
         }
 
         if (ACTION_REQUEST_PERMISSION.equals(action)) {
-            
+            pluginResultNORESULT.setKeepCallback(true);
             this.requestPermission(callbackContext);
             return true;
         }else if(ACTION_ENABLE_GPS_DIALOG.equals(action)){
             newCallbackContext = callbackContext;
             cordova.setActivityResultCallback (this); //necessary to call onActivityResult
+            pluginResultNORESULT.setKeepCallback(true);
             this.enableGPS();
             return true;
         }else if(ACTION_START_PERFORM.equals(action)){
