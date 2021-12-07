@@ -68,7 +68,7 @@ public class NetPerformance extends CordovaPlugin {
         }
 
         if (ACTION_REQUEST_PERMISSION.equals(action)) {
-            cordova.getThreadPool().execute(new Runnable(){
+            activity.runOnUiThread(new Runnable(){
                 public void run(){
                     pluginResultNORESULT.setKeepCallback(true);
                     requestPermission(callbackContext);
@@ -78,7 +78,7 @@ public class NetPerformance extends CordovaPlugin {
         }else if(ACTION_ENABLE_GPS_DIALOG.equals(action)){
             newCallbackContext = callbackContext;
             cordova.setActivityResultCallback(this);
-            cordova.getThreadPool().execute(new Runnable(){
+            activity.runOnUiThread(new Runnable(){
                 public void run(){
                     //necessary to call onActivityResult
                     pluginResultNORESULT.setKeepCallback(true);
@@ -114,7 +114,7 @@ public class NetPerformance extends CordovaPlugin {
             });
             return true;
         }else if(ACTION_STOP_PERFORM.equals(action)){
-            activity.runOnUiThread(new Runnable() {
+            cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
                     activity.getApplicationContext().stopService(new Intent(activity, ServiceNet.class));
