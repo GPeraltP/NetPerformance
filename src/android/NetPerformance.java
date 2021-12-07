@@ -71,17 +71,18 @@ public class NetPerformance extends CordovaPlugin {
             cordova.getThreadPool().execute(new Runnable(){
                 public void run(){
                     pluginResultNORESULT.setKeepCallback(true);
-                    this.requestPermission(callbackContext);
+                    requestPermission(callbackContext);
                 }
             });
             return true;
         }else if(ACTION_ENABLE_GPS_DIALOG.equals(action)){
             newCallbackContext = callbackContext;
+            cordova.setActivityResultCallback(this);
             cordova.getThreadPool().execute(new Runnable(){
                 public void run(){
-                    cordova.setActivityResultCallback (this); //necessary to call onActivityResult
+                    //necessary to call onActivityResult
                     pluginResultNORESULT.setKeepCallback(true);
-                    this.enableGPS();
+                    enableGPS();
                 }
             });
             return true;
