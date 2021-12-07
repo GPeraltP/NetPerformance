@@ -68,18 +68,26 @@ public class NetPerformance extends CordovaPlugin {
         }
 
         if (ACTION_REQUEST_PERMISSION.equals(action)) {
-            pluginResultNORESULT.setKeepCallback(true);
-            this.requestPermission(callbackContext);
+            cordova.getThreadPool().execute(new Runnable(){
+                public void run(){
+                    pluginResultNORESULT.setKeepCallback(true);
+                    this.requestPermission(callbackContext);
+                }
+            });
             return true;
         }else if(ACTION_ENABLE_GPS_DIALOG.equals(action)){
             newCallbackContext = callbackContext;
-            cordova.setActivityResultCallback (this); //necessary to call onActivityResult
-            pluginResultNORESULT.setKeepCallback(true);
-            this.enableGPS();
+            cordova.getThreadPool().execute(new Runnable(){
+                public void run(){
+                    cordova.setActivityResultCallback (this); //necessary to call onActivityResult
+                    pluginResultNORESULT.setKeepCallback(true);
+                    this.enableGPS();
+                }
+            });
             return true;
         }else if(ACTION_START_PERFORM.equals(action)){
             JSONObject finalJsonArgs = jsonArgs;
-            activity.runOnUiThread(new Runnable() {
+            cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
                     String phone = "", imei = "", brand = "", model = "", minute = "";
