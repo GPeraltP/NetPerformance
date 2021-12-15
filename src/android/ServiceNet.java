@@ -100,6 +100,7 @@ public class ServiceNet extends Service {
         int timeLoop = convertStringMinToMs(getSharedPreferences(KEY_MINUTE));
         speedDownload.execute();
         speedUpload.execute();
+        time.cancel();
         time = new Timer();
         time.scheduleAtFixedRate(new TimerTask(){
             @Override
