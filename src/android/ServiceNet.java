@@ -159,13 +159,13 @@ public class ServiceNet extends Service {
             }
         },3000,timeLoop);
 
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        speedDownload.cancel(true);
+        /*speedDownload.cancel(true);
         speedUpload.cancel(true);
         time.cancel();
         Intent broadcastIntent = new Intent(this, SensorRestarterBroadcastReceiver.class);
@@ -178,7 +178,7 @@ public class ServiceNet extends Service {
                     Log.i("TAG", "fail to remove location listners, ignore", ex);
                 }
             }
-        }
+        } */
     }
 
     @Nullable
