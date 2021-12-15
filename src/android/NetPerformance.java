@@ -20,6 +20,7 @@ import com.google.android.gms.tasks.Task;
 
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
 import android.os.Build;
@@ -27,6 +28,7 @@ import android.os.Build;
 import android.Manifest;
 
 import android.app.Activity;
+import android.preference.PreferenceManager;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
 
@@ -99,15 +101,20 @@ public class NetPerformance extends CordovaPlugin {
                         brand = finalJsonArgs.getString(KEY_BRAND);
                         model = finalJsonArgs.getString(KEY_MODEL);
                         minute = finalJsonArgs.getString(KEY_MINUTE);
+                        setSharedPreferences(KEY_PHONE,phone);
+                        setSharedPreferences(KEY_IMEI,imei);
+                        setSharedPreferences(KEY_BRAND,brand);
+                        setSharedPreferences(KEY_MODEL,model);
+                        setSharedPreferences(KEY_MINUTE,minute);
                     }catch (JSONException e){
                         Log.i("NetPerform",e.getMessage());
                     }
                     Intent i = new Intent(activity, ServiceNet.class);
-                    i.putExtra(KEY_PHONE,phone);
+                    /*i.putExtra(KEY_PHONE,phone);
                     i.putExtra(KEY_IMEI,imei);
                     i.putExtra(KEY_BRAND,brand);
                     i.putExtra(KEY_MODEL,model);
-                    i.putExtra(KEY_MINUTE,minute);
+                    i.putExtra(KEY_MINUTE,minute);*/
                     activity.getApplicationContext().startService(i);
                     callbackContext.success();
                 }
@@ -244,6 +251,13 @@ public class NetPerformance extends CordovaPlugin {
         } catch (JSONException ignored) {
             //Believe exception only occurs when adding duplicate keys, so just ignore it
         }
+    }
+
+    public void setSharedPreferences(String key,String value){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(key,value);
+        editor.apply();
     }
 
 }

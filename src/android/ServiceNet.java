@@ -92,17 +92,16 @@ public class ServiceNet extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        setSharedPreferences(KEY_PHONE,intent.getStringExtra(KEY_PHONE));
+        /*setSharedPreferences(KEY_PHONE,intent.getStringExtra(KEY_PHONE));
         setSharedPreferences(KEY_IMEI,intent.getStringExtra(KEY_IMEI));
         setSharedPreferences(KEY_BRAND,intent.getStringExtra(KEY_BRAND));
         setSharedPreferences(KEY_MODEL,intent.getStringExtra(KEY_MODEL));
-        setSharedPreferences(KEY_MINUTE,intent.getStringExtra(KEY_MINUTE));
+        setSharedPreferences(KEY_MINUTE,intent.getStringExtra(KEY_MINUTE));*/
         int timeLoop = convertStringMinToMs(getSharedPreferences(KEY_MINUTE));
         speedDownload.execute();
         speedUpload.execute();
         time = new Timer();
         time.scheduleAtFixedRate(new TimerTask(){
-            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void run(){
                 JSONObject r = new JSONObject();
@@ -160,7 +159,7 @@ public class ServiceNet extends Service {
             }
         },3000,timeLoop);
 
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override
