@@ -168,8 +168,6 @@ public class ServiceNet extends Service {
         speedDownload.cancel(true);
         speedUpload.cancel(true);
         time.cancel();
-        Intent broadcastIntent = new Intent(this, SensorRestarterBroadcastReceiver.class);
-        sendBroadcast(broadcastIntent);
         if (mLocationManager != null) {
             for (int i = 0; i < mLocationListeners.length; i++) {
                 try {
