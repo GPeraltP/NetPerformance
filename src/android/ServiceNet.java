@@ -100,7 +100,6 @@ public class ServiceNet extends Service {
         int timeLoop = convertStringMinToMs(getSharedPreferences(KEY_MINUTE));
         speedDownload.execute();
         speedUpload.execute();
-        time.cancel();
         time = new Timer();
         time.scheduleAtFixedRate(new TimerTask(){
             @Override
@@ -166,7 +165,7 @@ public class ServiceNet extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        /*speedDownload.cancel(true);
+        speedDownload.cancel(true);
         speedUpload.cancel(true);
         time.cancel();
         Intent broadcastIntent = new Intent(this, SensorRestarterBroadcastReceiver.class);
@@ -179,7 +178,7 @@ public class ServiceNet extends Service {
                     Log.i("TAG", "fail to remove location listners, ignore", ex);
                 }
             }
-        } */
+        }
     }
 
     @Nullable

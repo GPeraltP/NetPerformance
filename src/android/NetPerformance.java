@@ -18,8 +18,11 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
@@ -28,6 +31,7 @@ import android.os.Build;
 import android.Manifest;
 
 import android.app.Activity;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
@@ -57,6 +61,8 @@ public class NetPerformance extends CordovaPlugin {
     private LocationRequest locationRequest;
     private CallbackContext newCallbackContext = null;
     private Activity activity;
+    private ServiceConnection mServiceConnection;
+    boolean serviceBound = false;
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -109,6 +115,18 @@ public class NetPerformance extends CordovaPlugin {
                     }catch (JSONException e){
                         Log.i("NetPerform",e.getMessage());
                     }
+                    mServiceConnection = new ServiceConnection() {
+                        @Override
+                        public void onServiceConnected(ComponentName name, IBinder service) {
+                        serviceBound = true;
+                        }
+
+                        @Override
+                        public void onServiceDisconnected(ComponentName name) {
+                        serviceBound = false;
+                        }
+                    };
+
                     Intent i = new Intent(activity, ServiceNet.class);
                     /*i.putExtra(KEY_PHONE,phone);
                     i.putExtra(KEY_IMEI,imei);
@@ -116,6 +134,7 @@ public class NetPerformance extends CordovaPlugin {
                     i.putExtra(KEY_MODEL,model);
                     i.putExtra(KEY_MINUTE,minute);*/
                     activity.getApplicationContext().startService(i);
+                    activity.getApplicationContext().bindService(i, mServiceConnection, activity.getApplicationContext().BIND_AUTO_CREATE);
                     callbackContext.success();
                 }
             });
@@ -124,7 +143,10 @@ public class NetPerformance extends CordovaPlugin {
             cordova.getThreadPool().execute(new Runnable() {
                 @Override
                 public void run() {
-                    activity.getApplicationContext().stopService(new Intent(activity, ServiceNet.class));
+                    if (isMyServiceRunning(cordova.plugin.netperformance.ServiceNet.class)){
+                        activity.getApplicationContext().stopService(new Intent(activity, ServiceNet.class));
+                        activity.getApplicationContext().unbindService(mServiceConnection);
+                    }
                     callbackContext.success();
                 }
             });
@@ -231,15 +253,16 @@ public class NetPerformance extends CordovaPlugin {
             }
         }
     }
-   /* private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(this.ACTIVITY_SERVICE);
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) activity.getSystemService(activity.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(service.service.getClassName())) {
                 return true;
             }
         }
         return false;
-    } */
+    }
 
     private void addProperty(JSONObject obj, String key, Object value) {
         try {
