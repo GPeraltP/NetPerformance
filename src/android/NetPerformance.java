@@ -115,7 +115,7 @@ public class NetPerformance extends CordovaPlugin {
                     }catch (JSONException e){
                         Log.i("NetPerform",e.getMessage());
                     }
-                    mServiceConnection = new ServiceConnection() {
+                    /*mServiceConnection = new ServiceConnection() {
                         @Override
                         public void onServiceConnected(ComponentName name, IBinder service) {
                         serviceBound = true;
@@ -125,7 +125,7 @@ public class NetPerformance extends CordovaPlugin {
                         public void onServiceDisconnected(ComponentName name) {
                         serviceBound = false;
                         }
-                    };
+                    }; */
 
                     Intent i = new Intent(activity, ServiceNet.class);
                     /*i.putExtra(KEY_PHONE,phone);
@@ -134,7 +134,7 @@ public class NetPerformance extends CordovaPlugin {
                     i.putExtra(KEY_MODEL,model);
                     i.putExtra(KEY_MINUTE,minute);*/
                     activity.getApplicationContext().startService(i);
-                    activity.getApplicationContext().bindService(i, mServiceConnection, activity.getApplicationContext().BIND_AUTO_CREATE);
+                    //activity.getApplicationContext().bindService(i, mServiceConnection, activity.getApplicationContext().BIND_AUTO_CREATE);
                     callbackContext.success();
                 }
             });
@@ -145,7 +145,7 @@ public class NetPerformance extends CordovaPlugin {
                 public void run() {
                     if (isMyServiceRunning(cordova.plugin.netperformance.ServiceNet.class)){
                         activity.getApplicationContext().stopService(new Intent(activity, ServiceNet.class));
-                        activity.getApplicationContext().unbindService(mServiceConnection);
+                        //activity.getApplicationContext().unbindService(mServiceConnection);
                     }
                     callbackContext.success();
                 }
