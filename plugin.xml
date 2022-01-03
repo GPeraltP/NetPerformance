@@ -15,7 +15,6 @@
             <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
             <uses-permission android:name="android.permission.READ_SMS"/>
             <uses-permission android:name="android.permission.READ_PHONE_NUMBERS"/>
-			<uses-permission android:name="Manifest.permission.ACCESS_BACKGROUND_LOCATION"/>
 			<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 			<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 			<uses-permission android:name="android.permission.INTERNET" />
@@ -24,12 +23,6 @@
 		</config-file>
 		<config-file target="AndroidManifest.xml" parent="/manifest/application">
       		<service android:name="cordova.plugin.netperformance.ServiceNet" />
-			<receiver
-            android:name="cordova.plugin.netperformance.SensorRestarterBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:label="RestartServiceWhenStopped">
-        	</receiver>
         </config-file>
 		<resource-file src="src/android/resource/amplifyconfiguration.json" target="res/raw/amplifyconfiguration.json"/>
 		<resource-file src="src/android/resource/awsconfiguration.json" target="res/raw/awsconfiguration.json" />
