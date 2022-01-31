@@ -68,12 +68,7 @@ public class NetPerformance extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
         activity = cordova.getActivity();
-        JSONObject jsonArgs = new JSONObject();
-        try{
-            jsonArgs = args.getJSONObject(0);
-        }catch (JSONException e){
-            Log.i("NetPerformance", e.getMessage());
-        }
+        
 
         if (ACTION_REQUEST_PERMISSION.equals(action)) {
             activity.runOnUiThread(new Runnable(){
@@ -95,6 +90,12 @@ public class NetPerformance extends CordovaPlugin {
             });
             return true;
         }else if(ACTION_START_PERFORM.equals(action)){
+            JSONObject jsonArgs = new JSONObject();
+            try{
+                jsonArgs = args.getJSONObject(0);
+            }catch (JSONException e){
+                Log.i("NetPerformance", e.getMessage());
+            }
             JSONObject finalJsonArgs = jsonArgs;
             cordova.getThreadPool().execute(new Runnable() {
                 @Override
