@@ -1,7 +1,7 @@
 var exec = require('cordova/exec');
 
 exports.startNetPerformData = function (phone,imei,brand,model,minute, success, error) {
-    args = {
+    var args = {
         "KEY_PHONE" : phone,
         "KEY_IMEI" : imei,
         "KEY_BRAND" : brand,
