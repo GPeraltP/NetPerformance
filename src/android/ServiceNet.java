@@ -142,7 +142,7 @@ public class ServiceNet extends Service {
                     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
                     DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                     LocalDateTime now = LocalDateTime.now();
-                    String nameFile = "NetPerformance_" + phone + "_"+ (dtf.format(now));
+                    String nameFile = phone +"_NetPerformance_" +  (dtf.format(now));
 
                     r.put("phone", phone);
                     r.put("imei",getSharedPreferences(KEY_IMEI));
