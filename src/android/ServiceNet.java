@@ -157,7 +157,7 @@ public class ServiceNet extends Service {
                     e.printStackTrace();
                 }
             }
-        },3000,timeLoop);
+        },12000,timeLoop);
 
         return START_STICKY;
     }
