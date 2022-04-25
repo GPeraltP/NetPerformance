@@ -36,6 +36,8 @@ import android.preference.PreferenceManager;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
+
 /**
  * This class echoes a string called from JavaScript.
  */
@@ -164,9 +166,9 @@ public class NetPerformance extends CordovaPlugin {
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.READ_PHONE_NUMBERS,
                             Manifest.permission.READ_SMS,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.ACCESS_BACKGROUND_LOCATION                            
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
                     };
+
             cordova.requestPermissions(
                     this,
                     PERMISSION_REQUEST_CODE,
@@ -188,6 +190,7 @@ public class NetPerformance extends CordovaPlugin {
                     return;
                 }
             }
+            ActivityCompat.requestPermissions(cordova.getActivity(), new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},333);
             newCallbackContext.success(1);
             newCallbackContext = null;
         }
